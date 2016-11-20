@@ -112,6 +112,7 @@ full_team_names <- full_team_names %>%
         mutate(team_list = as.character(team_list),
                full_team_names = as.character(full_team_names)) %>%
         rename(team = team_list)
+
 full_team_names$franchise_name <- full_team_names$full_team_names
 full_team_names$franchise_name[full_team_names$franchise_name =="Arizona Coyotes"]<-"Phoenix_Arizona Coyotes"
 full_team_names$franchise_name[full_team_names$franchise_name =="Phoenix Coyotes"]<-"Phoenix_Arizona Coyotes"
@@ -212,7 +213,6 @@ df$division[df$franchise_name %in% central_division$franchise_name & df$season %
 df$division[df$franchise_name %in% northwest_division$franchise_name & df$season %in% northwest_division$seasons] <- "Northwest Division"
 df$division[df$franchise_name %in% pacific_division$franchise_name & df$season %in% pacific_division$seasons] <- "Pacific Division"
 
-
 df$division[df$franchise_name %in% atlantic2_division$franchise_name & df$season %in% atlantic2_division$seasons] <- "Atlantic2 Division"
 df$division[df$franchise_name %in% metropolitan_division$franchise_name & df$season %in% metropolitan_division$seasons] <- "Metropolitan Division"
 df$division[df$franchise_name %in% pacific2_division$franchise_name & df$season %in% pacific2_division$seasons] <- "Pacific2 Division"
@@ -225,61 +225,65 @@ df$conference[df$franchise_name %in% conference1$west & df$season %in% conferenc
 df$conference[df$franchise_name %in% conference2$east & df$season %in% conference2$seasons] <- "Eastern Conference"
 df$conference[df$franchise_name %in% conference2$west & df$season %in% conference2$seasons] <- "Western Conference"
 
-
+#add coach game number column
 df <- df %>%
         group_by(head_coach) %>%
         mutate(coach_game_number=dense_rank(date)) %>%
         ungroup()
 
+#add franchise game number column
 df <- df %>%
         arrange(date) %>%
         group_by(franchise_name) %>%
         mutate(franchise_game_number=dense_rank(date)) %>%
         ungroup()
 
+#create key for joining
 df <- df %>%
         arrange(franchise_name, date) %>%
         mutate(key = paste(team, season))
 
+#create games_coached dataframe
 games_coached <- df %>%
         select(date, head_coach) %>%
         group_by(head_coach) %>%
         summarize(games_coached = n())
 
+#join df and games_coached
 df <- left_join(df, games_coached, by = "head_coach")
 
+#create team summary dataframe
 team_summaries <- df %>%
         select(season, key, CF.per) %>%
         group_by(season, key) %>%
         summarize(CF.percent.season = mean(CF.per))
 
+#join df and team summary dataframes
 df <- left_join(df, team_summaries, by = "key")
 
+#remove junk seaason.y column
 df <- df %>%
         rename(season = season.x) %>%
         select(-season.y)
 
+#change game_type, first and last names to character
 df <- df %>%
         mutate(game_type = as.character(game_type),
                first_name = as.character(first_name),
                last_name = as.character(last_name))
 
-df.division <- df %>%
-        select(season, date, season_game_number, division, full_team_names, CF.per, CF.percent.season) %>%
-        filter(season == "20152016" & division == "Metropolitan Division") %>%
-        arrange(-CF.percent.season) %>%
-        mutate(full_team_names = reorder(full_team_names, -CF.percent.season))
-
+#write df to csv
 write_csv(df, "combined.coaches.csv")
 
-team_data <- read_csv("combined.coaches.csv")
-
-cleaned_coach_data <- team_data %>%
+#create cleaned up dataframe and write to csv
+cleaned_coach_data <- df %>%
         select(game_type, season, date, team, full_team_names, franchise, franchise_name, team_game_number, season_game_number, coach_game_number, GF:TOI, -first_name, -last_name)
 
 write_csv(cleaned_coach_data, "NHH_coach_data.csv")
 
 
+
+#graph ideas
 df.division <- df %>%
         select(season, date, season_game_number, division, full_team_names, team, franchise_name, CF.per, CF.percent.season) %>%
         filter(season == "20152016") %>%
