@@ -1,4 +1,4 @@
-setwd("C:/Users/conor/Dropbox/R/coach_analysis")
+setwd("~/github folder/NHL-Coaches")
 library(ggthemes)
 library(scales)
 library(ggplot2)
@@ -9,18 +9,19 @@ library(scales)
 library(readr)
 library(tidyr)
 library(ggrepel)
+
 #Load 05/06-14/15 data
-coach.data.archive <- read.csv("coach.data.csv")
+
 coach_data <- read.csv("coach.data.csv")
 coach_data <- coach_data %>%
         filter(Game.Type == "Regular Season", season != "20152016")
-unique(coach_data$Game.Type)
+
 coach_data$Date <- mdy(coach_data$Date)
-str(coach_data$Date)
+
 coach_data$season <- as.character(coach_data$season)
-str(coach_data$season)
+
 coach_data$Team <- as.character(coach_data$Team)
-str(coach_data$Team)
+
 
 #clean up coach.data column names
 coach_data <- coach_data %>%
@@ -33,14 +34,13 @@ coach_data <- coach_data %>%
         )
 
 #load 15/16 data
-season_load_archive <- read.csv("15.16.update.5.21.csv")
+
 season_load <- read.csv("15.16.update.5.21.csv")
 season_load$Date <- ymd(season_load$Date)
-str(season_load$Date)
+
 season_load$season <- as.character(season_load$season)
-str(season_load$season)
+
 season_load$Team <- as.character(season_load$Team)
-str(season_load$Team)
 
 #clean up season_load column names
 season_load <- season_load %>%
@@ -254,6 +254,7 @@ team_summaries <- df %>%
         summarize(CF.percent.season = mean(CF.per))
 
 df <- left_join(df, team_summaries, by = "key")
+
 df <- df %>%
         rename(season = season.x) %>%
         select(-season.y)
