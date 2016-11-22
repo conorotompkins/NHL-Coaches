@@ -277,11 +277,9 @@ write_csv(df, "combined.coaches.csv")
 
 #create cleaned up dataframe and write to csv
 cleaned_coach_data <- df %>%
-        select(game_type, season, date, team, full_team_names, franchise, franchise_name, team_game_number, season_game_number, coach_game_number, GF:TOI, -first_name, -last_name)
+        select(game_type, season, date, team, full_team_names, franchise, franchise_name, head_coach_u, team_game_number, season_game_number, coach_game_number, GF:TOI, -first_name, -last_name)
 
 write_csv(cleaned_coach_data, "NHH_coach_data.csv")
-
-
 
 #graph ideas
 df.division <- df %>%
