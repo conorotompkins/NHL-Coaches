@@ -11,6 +11,9 @@ library(cowplot)
 
 team_data <- read_csv("https://raw.githubusercontent.com/conorotompkins/NHL-Coaches/master/NHH_coach_data.csv")
 
+#load custom theme
+source("https://raw.githubusercontent.com/conorotompkins/AdjGSAA/master/graphs/theme_nhh.R")
+
 #create season lines
 x <- 82
 lines <- c(x, x*2:7, ((x*7)+48), (((x*7)+48)+82), ((((x*7)+48)+82)+82))
@@ -26,12 +29,14 @@ seasons <- c("06-07",
              "14-15",
              "15-16")
 
+#set graph criteria
 team <- "DET"
 franchise <- "Detroit Red Wings"
 
 DET_team <- team_data %>%
         filter(team == "DET")
 
+#create statistical model
 fit <- loess(DET_team$CF.per ~ DET_team$team_game_number, span = .15)
 
 pred <- predict(fit, se=TRUE)
@@ -39,6 +44,8 @@ pred <- predict(fit, se=TRUE)
 DET_team$fit <- pred$fit
 DET_team$se.fit <- pred$se.fit
 fit <- NULL
+
+#create plot
 det_plot <- ggplot(DET_team, aes(x = team_game_number, y = fit)) +
         geom_hline(yintercept = 50, size = .25, alpha = I(1)) +
         geom_vline(xintercept = lines, size = .25, alpha = I(1)) +
@@ -57,4 +64,6 @@ det_plot <- ggplot(DET_team, aes(x = team_game_number, y = fit)) +
         theme(panel.grid = element_blank(), 
               legend.position = "top")
 print(det_plot)
+
+#save plot
 ggsave(paste(franchise, "coach graph.png"), width = 15, height = 9)
