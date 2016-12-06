@@ -25,8 +25,9 @@ seasons <- c("06-07",
 
 df <- team_data %>%
         filter(team %in% c("DET", "PIT"))
-
+#the problem is that the model thinks the data is 1732 rows long, and the dplyr pipe splits the data into two ~830 row sets
 model <- loess(CF.per ~ team_game_number, data = df, span = .15)
+class(model)
 head(augment(model, df))
 
 df <- df %>%
