@@ -53,4 +53,4 @@ ggplot(team_data, aes(team_game_number, .fitted)) +
         guides(fill = FALSE, color = FALSE) +
         theme(panel.grid.major = element_blank(), 
               axis.text.x = element_text(size = 10))
-ggsave("NHL coaches big graph.png")
+ggsave("NHL coaches big graph.png", height = 12, width = 45)
