@@ -63,5 +63,6 @@ df <- df %>%
         do(augment(loess(measure ~ team_game_number, span = .15, data = .), newdata = .))
 
 ggplot(df, aes(team_game_number, .fitted, color = metric)) +
+        geom_ribbon(aes(ymax = (.fitted + 1.96 * .se.fit), ymin = (.fitted - 1.96 * .se.fit), fill = metric), alpha = I(.3)) +
         geom_line() +
         facet_wrap(~team)
