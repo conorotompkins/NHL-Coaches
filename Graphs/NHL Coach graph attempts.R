@@ -29,10 +29,6 @@ df <- team_data %>%
 #the problem is that the model thinks the data is 1732 rows long, and the dplyr pipe splits the data into two ~830 row sets
 model <- loess(CF.per ~ team_game_number, data = df, span = .15)
 
-
-
-?augment
-
 team_data <- team_data %>% 
         group_by(franchise_name) %>% 
         do(augment(loess(CF.per ~ team_game_number, span = .15, data = .), newdata = .))
@@ -54,3 +50,18 @@ ggplot(team_data, aes(team_game_number, .fitted)) +
         theme(panel.grid.major = element_blank(), 
               axis.text.x = element_text(size = 10))
 ggsave("NHL coaches big graph.png", height = 12, width = 45)
+
+df <- team_data %>%
+        filter(team %in% c("DET", "PIT")) %>%
+        select(team, team_game_number, CF60, CA60) %>%
+        gather(metric, measure, -team, -team_game_number)
+#the problem is that the model thinks the data is 1732 rows long, and the dplyr pipe splits the data into two ~830 row sets
+model <- loess(CF.per ~ team_game_number, data = df, span = .15)
+
+df <- df %>% 
+        group_by(team, metric) %>% 
+        do(augment(loess(measure ~ team_game_number, span = .15, data = .), newdata = .))
+
+ggplot(df, aes(team_game_number, .fitted, color = metric)) +
+        geom_line() +
+        facet_wrap(~team)
