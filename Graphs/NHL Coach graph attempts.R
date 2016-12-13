@@ -1,7 +1,7 @@
 library(tidyverse)
 library(broom)
 library(viridis)
-
+library(ggforce)
 #load custom theme
 source("https://raw.githubusercontent.com/conorotompkins/AdjGSAA/master/graphs/theme_nhh.R")
 theme_set(theme_nhh())
@@ -23,11 +23,6 @@ seasons <- c("06-07",
              "13-14",
              "14-15",
              "15-16")
-
-df <- team_data %>%
-        filter(team %in% c("DET", "PIT"))
-#the problem is that the model thinks the data is 1732 rows long, and the dplyr pipe splits the data into two ~830 row sets
-model <- loess(CF.per ~ team_game_number, data = df, span = .15)
 
 team_data <- team_data %>% 
         group_by(franchise_name) %>% 
@@ -52,17 +47,18 @@ ggplot(team_data, aes(team_game_number, .fitted)) +
 ggsave("NHL coaches big graph.png", height = 12, width = 45)
 
 df <- team_data %>%
-        filter(team %in% c("DET", "PIT")) %>%
-        select(team, team_game_number, CF60, CA60) %>%
-        gather(metric, measure, -team, -team_game_number)
-#the problem is that the model thinks the data is 1732 rows long, and the dplyr pipe splits the data into two ~830 row sets
-model <- loess(CF.per ~ team_game_number, data = df, span = .15)
+        filter(team %in% c("PIT", "DET")) %>%
+        select(team, team_game_number, head_coach_u, CF60, CA60) %>%
+        gather(metric, measure, -team, -team_game_number, -head_coach_u)
+
 
 df <- df %>% 
         group_by(team, metric) %>% 
         do(augment(loess(measure ~ team_game_number, span = .15, data = .), newdata = .))
 
-ggplot(df, aes(team_game_number, .fitted, color = metric)) +
-        geom_ribbon(aes(ymax = (.fitted + 1.96 * .se.fit), ymin = (.fitted - 1.96 * .se.fit), fill = metric), alpha = I(.3)) +
-        geom_line() +
+ggplot(df) +
+        geom_line(aes(team_game_number, .fitted, color = metric)) +
+        geom_ribbon(aes(ymax = (.fitted + 1.96 * .se.fit), ymin = (.fitted - 1.96 * .se.fit), fill = metric), alpha = I(.5)) +
+        #geom_line(aes(team_game_number, .fitted, color = metric)) +
         facet_wrap(~team)
+unique(df$metric)
