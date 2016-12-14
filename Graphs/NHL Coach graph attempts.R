@@ -1,16 +1,9 @@
-install.packages(c("tidyverse", "broom", "viridis"), dependencies = TRUE)
-
-source("https://bioconductor.org/biocLite.R")
-biocLite("ggtree")
-
 library(tidyverse)
 library(broom)
 library(viridis)
 library(ggforce)
 library(ggtree)
 library(curl)
-
-install.packages("RColorBrewer")
 library(RColorBrewer)
 
 setwd("C:/Users/conor/githubfolder/NHL-Coaches/Graphs")
@@ -82,11 +75,9 @@ df$metric[df$metric == "CA60"] <- "Shots Against Per 60"
 team_plot <- ggplot(filter(df, metric == "CF.per"), aes(team_game_number, .fitted)) +
         geom_hline(yintercept = 50, size = .25, alpha = I(1)) +
         geom_vline(xintercept = lines, size = .25, alpha = I(.5)) +
-        geom_ribbon(aes(ymax = (.fitted + 1.96 * .se.fit), ymin = (.fitted - 1.96 * .se.fit), fill = head_coach_u), alpha = I(.4)) +
-        geom_line(aes(color = head_coach_u, alpha = coach_alpha), size = 2) +
+        geom_ribbon(aes(ymax = (.fitted + 1.96 * .se.fit), ymin = (.fitted - 1.96 * .se.fit)), fill = "black", alpha = I(.4)) +
+        geom_line(aes(alpha = coach_alpha), color = "black", size = 1) +
         scale_x_continuous(breaks = lines, labels = seasons) +
-        scale_color_viridis(discrete = TRUE) +
-        scale_fill_viridis(discrete = TRUE) +
         coord_cartesian(ylim = c(40, 60)) +
         guides(fill = FALSE, color = FALSE, alpha = FALSE) +
         labs(y = "5v5 Shots For %", 
@@ -108,8 +99,8 @@ coach_plot <- ggplot(filter(df, metric %in% c("Shots For Per 60", "Shots Against
                         ylim = c(40, 60)) +
         facet_wrap(~key) +
         scale_x_continuous(breaks = lines, labels = seasons) +
-        #scale_colour_manual(values = c("yellow","orange")) +
-        #scale_fill_manual(values = c("yellow","orange")) +
+        scale_color_viridis(discrete = TRUE) +
+        scale_fill_viridis(discrete = TRUE) +
         labs(y = "5v5 Shots Per 60", 
              x = NULL,
              title = "NHL Head Coaches Historical View, 2005-2016",
@@ -120,7 +111,7 @@ coach_plot <- ggplot(filter(df, metric %in% c("Shots For Per 60", "Shots Against
               legend.title = element_blank())
 
 subview(coach_plot, team_plot, x = 550, y = 41, width = .3, height = .3)
-ggsave("subview_test.png", width = 18, height = 9)
+ggsave(paste(coach, set_team, ".png"), width = 18, height = 9, dpi = 300)
 
 ?subview
 
