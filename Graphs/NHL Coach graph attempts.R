@@ -1,8 +1,17 @@
+install.packages(c("tidyverse", "broom", "viridis"), dependencies = TRUE)
+
+source("https://bioconductor.org/biocLite.R")
+biocLite("ggtree")
+
 library(tidyverse)
 library(broom)
 library(viridis)
 library(ggforce)
 library(ggtree)
+library(curl)
+
+install.packages("RColorBrewer")
+library(RColorBrewer)
 
 setwd("C:/Users/conor/githubfolder/NHL-Coaches/Graphs")
 
@@ -50,6 +59,10 @@ ggplot(team_data, aes(team_game_number, .fitted)) +
               axis.text.x = element_text(size = 10))
 ggsave("NHL coaches big graph.png", height = 12, width = 45)
 
+
+brewer.pal(n = 2, name = "Set2")
+
+coach <- "Dan Bylsma"
 df <- team_data %>%
         filter(team == "PIT") %>%
         select(team, franchise_name, team_game_number, head_coach_u, CF.per, CF60, CA60) %>%
@@ -62,10 +75,12 @@ df <- df %>%
         mutate(coach_alpha = ifelse(head_coach_u == coach, .2, .1),
                key = paste(head_coach_u, team))
 
+df$metric[df$metric == "CF60"] <- "Shots For Per 60"
+df$metric[df$metric == "CA60"] <- "Shots Against Per 60"
 
 team_plot <- ggplot(filter(df, metric == "CF.per"), aes(team_game_number, .fitted)) +
         geom_hline(yintercept = 50, size = .25, alpha = I(1)) +
-        geom_vline(xintercept = lines, size = .25, alpha = I(1)) +
+        geom_vline(xintercept = lines, size = .25, alpha = I(.5)) +
         geom_ribbon(aes(ymax = (.fitted + 1.96 * .se.fit), ymin = (.fitted - 1.96 * .se.fit), fill = head_coach_u), alpha = I(.4)) +
         geom_line(aes(color = head_coach_u, alpha = coach_alpha), size = 2) +
         scale_x_continuous(breaks = lines, labels = seasons) +
@@ -80,28 +95,31 @@ team_plot <- ggplot(filter(df, metric == "CF.per"), aes(team_game_number, .fitte
               axis.text = element_blank(),
               axis.title.x = element_blank(),
               axis.title.y = element_text(size = 8),
+              title = element_text(size = 8),
               legend.position = "bottom")
-coach <- "Dan Bylsma"
 
-max(df$team_game_number[df$head_coach_u == coach])
-min(df$team_game_number[df$head_coach_u == coach])
-
-coach_plot <- ggplot(filter(df, metric %in% c("CF60", "CA60") & head_coach_u == "Dan Bylsma"), aes(team_game_number, .fitted)) +
-        geom_hline(yintercept = 50, size = .25, alpha = I(1)) +
+coach_plot <- ggplot(filter(df, metric %in% c("Shots For Per 60", "Shots Against Per 60") & head_coach_u == "Dan Bylsma"), aes(team_game_number, .fitted)) +
         geom_vline(xintercept = lines, size = .25, alpha = I(1)) +
         geom_ribbon(aes(ymax = (.fitted + 1.96 * .se.fit), ymin = (.fitted - 1.96 * .se.fit), fill = metric), alpha = I(.5)) +
         geom_line(aes(color = metric), size = 2) +
-        coord_cartesian(xlim = c(703, 304), ylim = c(40, 60)) +
+        coord_cartesian(xlim = c(max(df$team_game_number[df$head_coach_u == coach]),
+                                 min(df$team_game_number[df$head_coach_u == coach])),
+                        ylim = c(40, 60)) +
         facet_wrap(~key) +
         scale_x_continuous(breaks = lines, labels = seasons) +
-        labs(y = "5v5 Shots For %", 
-             x = "Season",
-             title = "NHL Head Coaches Historical View, 2005-2016") +
+        #scale_colour_manual(values = c("yellow","orange")) +
+        #scale_fill_manual(values = c("yellow","orange")) +
+        labs(y = "5v5 Shots Per 60", 
+             x = NULL,
+             title = "NHL Head Coaches Historical View, 2005-2016",
+             legend = "Shot Type") +
         theme(panel.grid.major = element_blank(), 
-              axis.text.x = element_text(size = 10))
+              axis.text.x = element_text(size = 16),
+              legend.position = "top",
+              legend.title = element_blank())
 
-subview(coach_plot, team_plot, x = 650, y = 42, width = .3, height = .3)
-ggsave("subview_test.png")
+subview(coach_plot, team_plot, x = 625, y = 42.5, width = .5, height = .5)
+ggsave("subview_test.png", width = 18, height = 9)
 
 ?subview
 
