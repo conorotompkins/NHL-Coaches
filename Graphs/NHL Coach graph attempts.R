@@ -62,9 +62,10 @@ ggsave("NHL coaches big graph.png", height = 12, width = 45)
 
 brewer.pal(n = 2, name = "Set2")
 
-coach <- "Dan Bylsma"
+coach <- "Alain Vigneault"
+set_team <- "VAN"
 df <- team_data %>%
-        filter(team == "PIT") %>%
+        filter(team == set_team) %>%
         select(team, franchise_name, team_game_number, head_coach_u, CF.per, CF60, CA60) %>%
         gather(metric, measure, -c(team, franchise_name, team_game_number, head_coach_u))
 
@@ -98,7 +99,7 @@ team_plot <- ggplot(filter(df, metric == "CF.per"), aes(team_game_number, .fitte
               title = element_text(size = 8),
               legend.position = "bottom")
 
-coach_plot <- ggplot(filter(df, metric %in% c("Shots For Per 60", "Shots Against Per 60") & head_coach_u == "Dan Bylsma"), aes(team_game_number, .fitted)) +
+coach_plot <- ggplot(filter(df, metric %in% c("Shots For Per 60", "Shots Against Per 60") & head_coach_u == coach), aes(team_game_number, .fitted)) +
         geom_vline(xintercept = lines, size = .25, alpha = I(1)) +
         geom_ribbon(aes(ymax = (.fitted + 1.96 * .se.fit), ymin = (.fitted - 1.96 * .se.fit), fill = metric), alpha = I(.5)) +
         geom_line(aes(color = metric), size = 2) +
@@ -118,7 +119,7 @@ coach_plot <- ggplot(filter(df, metric %in% c("Shots For Per 60", "Shots Against
               legend.position = "top",
               legend.title = element_blank())
 
-subview(coach_plot, team_plot, x = 625, y = 42.5, width = .4, height = .4)
+subview(coach_plot, team_plot, x = 550, y = 41, width = .3, height = .3)
 ggsave("subview_test.png", width = 18, height = 9)
 
 ?subview
