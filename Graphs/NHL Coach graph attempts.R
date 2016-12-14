@@ -118,7 +118,7 @@ coach_plot <- ggplot(filter(df, metric %in% c("Shots For Per 60", "Shots Against
               legend.position = "top",
               legend.title = element_blank())
 
-subview(coach_plot, team_plot, x = 625, y = 42.5, width = .5, height = .5)
+subview(coach_plot, team_plot, x = 625, y = 42.5, width = .4, height = .4)
 ggsave("subview_test.png", width = 18, height = 9)
 
 ?subview
