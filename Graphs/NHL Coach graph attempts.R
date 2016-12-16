@@ -10,6 +10,8 @@ setwd("C:/Users/conor/githubfolder/NHL-Coaches/Graphs")
 source("https://raw.githubusercontent.com/conorotompkins/AdjGSAA/master/graphs/theme_nhh.R")
 theme_set(theme_nhh())
 
+set_caption <- "@Null_HHockey"
+
 team_data <- read_csv("https://raw.githubusercontent.com/conorotompkins/NHL-Coaches/master/NHH_coach_data.csv")
 
 
@@ -53,8 +55,8 @@ ggsave("NHL coaches big graph.png", height = 12, width = 45)
 
 brewer.pal(n = 2, name = "Set2")
 
-coach <- "Alain Vigneault"
-set_team <- "VAN"
+coach <- "Peter Deboer"
+set_team <- "N.J"
 df <- team_data %>%
         filter(team == set_team) %>%
         select(team, franchise_name, team_game_number, head_coach_u, CF.per, CF60, CA60) %>%
@@ -67,8 +69,8 @@ df <- df %>%
         mutate(coach_alpha = ifelse(head_coach_u == coach, .2, .1),
                key = paste(head_coach_u, team))
 
-df$metric[df$metric == "CF60"] <- "Shots For Per 60"
-df$metric[df$metric == "CA60"] <- "Shots Against Per 60"
+df$metric[df$metric == "CF60"] <- "Shots For"
+df$metric[df$metric == "CA60"] <- "Shots Against"
 
 team_plot <- ggplot(filter(df, metric == "CF.per"), aes(team_game_number, .fitted)) +
         geom_hline(yintercept = 50, size = .25, alpha = I(1)) +
@@ -88,27 +90,29 @@ team_plot <- ggplot(filter(df, metric == "CF.per"), aes(team_game_number, .fitte
               title = element_text(size = 8),
               legend.position = "bottom")
 
-coach_plot <- ggplot(filter(df, metric %in% c("Shots For Per 60", "Shots Against Per 60") & head_coach_u == coach), aes(team_game_number, .fitted)) +
+coach_plot <- ggplot(filter(df, metric %in% c("Shots For", "Shots Against") & head_coach_u == coach), aes(team_game_number, .fitted)) +
         geom_vline(xintercept = lines, size = .25, alpha = I(1)) +
         geom_ribbon(aes(ymax = (.fitted + 1.96 * .se.fit), ymin = (.fitted - 1.96 * .se.fit), fill = metric), alpha = I(.5)) +
         geom_line(aes(color = metric), size = 2) +
         coord_cartesian(xlim = c(max(df$team_game_number[df$head_coach_u == coach]),
                                  min(df$team_game_number[df$head_coach_u == coach])),
-                        ylim = c(40, 60)) +
+                        ylim = c(30, 70)) +
         facet_wrap(~key) +
         scale_x_continuous(breaks = lines, labels = seasons) +
         scale_color_viridis(discrete = TRUE) +
         scale_fill_viridis(discrete = TRUE) +
         labs(y = "5v5 Shots Per 60", 
-             x = NULL,
+             x = "Season",
              title = "NHL Head Coaches Historical View, 2005-2016",
-             legend = "Shot Type") +
+             legend = "Shot Type",
+             caption = set_caption) +
         theme(panel.grid.major = element_blank(), 
               axis.text.x = element_text(size = 16),
               legend.position = "top",
-              legend.title = element_blank())
+              legend.title = element_blank(),
+              plot.caption = element_text(hjust = 1))
 
-subview(coach_plot, team_plot, x = 550, y = 41, width = .3, height = .3)
+subview(coach_plot, team_plot, x = 541, y = 33, width = .5, height = .5)
 ggsave(paste(coach, set_team, ".png"), width = 18, height = 9, dpi = 300)
 
 ?subview
