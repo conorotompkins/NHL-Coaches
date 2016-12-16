@@ -1,10 +1,8 @@
 library(tidyverse)
 library(broom)
 library(viridis)
-library(ggforce)
 library(ggtree)
 library(curl)
-library(RColorBrewer)
 
 setwd("C:/Users/conor/githubfolder/NHL-Coaches/Graphs")
 
