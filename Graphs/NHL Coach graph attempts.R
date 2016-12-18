@@ -12,7 +12,7 @@ theme_set(theme_nhh())
 
 set_caption <- "@Null_HHockey"
 
-team_data <- read_csv("https://raw.githubusercontent.com/conorotompkins/NHL-Coaches/master/NHH_coach_data.csv")
+league_data <- read_csv("https://raw.githubusercontent.com/conorotompkins/NHL-Coaches/master/NHH_coach_data.csv")
 
 
 
@@ -30,7 +30,7 @@ seasons <- c("06-07",
              "14-15",
              "15-16")
 
-team_data <- team_data %>% 
+team_data <- league_data %>% 
         group_by(franchise_name) %>% 
         do(augment(loess(CF.per ~ team_game_number, span = .15, data = .), newdata = .))
 
@@ -115,12 +115,14 @@ coach_plot <- ggplot(filter(df, metric %in% c("Shots For", "Shots Against") & he
 subview(coach_plot, team_plot, x = 541, y = 33, width = .5, height = .5)
 ggsave(paste(coach, set_team, ".png"), width = 18, height = 9, dpi = 300)
 
-?subview
+#all teams in mone graph
+team_data <- league_data %>% 
+        group_by(franchise_name) %>% 
+        do(augment(loess(CF.per ~ team_game_number, span = .3, data = .), newdata = .))
 
-
-ggplot(df) +
-        geom_line(aes(team_game_number, .fitted, color = metric)) +
-        geom_ribbon(aes(ymax = (.fitted + 1.96 * .se.fit), ymin = (.fitted - 1.96 * .se.fit), fill = metric), alpha = I(.5)) +
-        #geom_line(aes(team_game_number, .fitted, color = metric)) +
-        facet_wrap(~team)
-unique(df$metric)
+ggplot(team_data, aes(team_game_number, .fitted, color = franchise_name, fill = franchise_name)) +
+        geom_hline(yintercept = 50, size = .25, alpha = I(1)) +
+        geom_vline(xintercept = lines, size = .25, alpha = I(.5)) +
+        #geom_ribbon(aes(ymax = (.fitted + 1.96 * .se.fit), ymin = (.fitted - 1.96 * .se.fit)), fill = "black", alpha = I(.4)) +
+        geom_line(aes(color = franchise_name), size = 1) +
+        scale_x_continuous(breaks = lines, labels = seasons)
