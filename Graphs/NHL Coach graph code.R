@@ -49,9 +49,10 @@ ggplot(df, aes(team_game_number, .fitted)) +
               axis.text.x = element_text(size = 10))
 ggsave("NHL coaches big graph.png", height = 12, width = 45)
 
-#set graph criteria
-set_franchise <- "Washington Capitals"
+unique(league_data$franchise_name)
 
+#set graph criteria
+set_franchise <- "Toronto Maple Leafs"
 df <- league_data %>%
         filter(franchise_name == set_franchise) %>%
         do(augment(loess(CF.per ~ team_game_number, span = .15, data = .), newdata = .))
