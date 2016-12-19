@@ -3,6 +3,8 @@ library(broom)
 library(viridis)
 library(ggtree)
 library(curl)
+library(ggrepel)
+library(viridis)
 
 setwd("C:/Users/conor/githubfolder/NHL-Coaches/Graphs")
 
@@ -117,12 +119,35 @@ ggsave(paste(coach, set_team, ".png"), width = 18, height = 9, dpi = 300)
 
 #all teams in mone graph
 team_data <- league_data %>% 
+        filter(season == "20152016") %>%
         group_by(franchise_name) %>% 
-        do(augment(loess(CF.per ~ team_game_number, span = .3, data = .), newdata = .))
-
-ggplot(team_data, aes(team_game_number, .fitted, color = franchise_name, fill = franchise_name)) +
+        do(augment(loess(CF.per ~ team_game_number, span = .7, data = .), newdata = .))
+        
+set_team <- "PIT"
+ggplot(team_data, aes(season_game_number, .fitted, color = franchise_name)) +
         geom_hline(yintercept = 50, size = .25, alpha = I(1)) +
-        geom_vline(xintercept = lines, size = .25, alpha = I(.5)) +
-        #geom_ribbon(aes(ymax = (.fitted + 1.96 * .se.fit), ymin = (.fitted - 1.96 * .se.fit)), fill = "black", alpha = I(.4)) +
-        geom_line(aes(color = franchise_name), size = 1) +
-        scale_x_continuous(breaks = lines, labels = seasons)
+        #geom_vline(xintercept = lines, size = .25, alpha = I(.5)) +
+        geom_ribbon(data = filter(team_data, team == set_team), aes(ymax = (.fitted + 1.96 * .se.fit), ymin = (.fitted - 1.96 * .se.fit), fill = franchise_name), alpha = I(.1)) +
+        geom_line(aes(color = franchise_name, size = ifelse(team == set_team, 2, 1))) +
+        geom_label_repel(data = filter(team_data, season_game_number == 82), aes(season_game_number, .fitted, label = team), alpha = 1, force = 2) +
+        #scale_x_continuous(breaks = 1:82, labels = 1:82) +
+        scale_color_viridis(discrete = TRUE) +
+        scale_fill_viridis(discrete = TRUE) +
+        coord_cartesian(ylim = c(40, 60)) +
+        facet_wrap(~conference) +
+        labs(y = "5v5 Shots For %", 
+             x = "Game Number",
+             title = team_data$season) +
+        guides(fill = FALSE, color = FALSE) +
+        theme(panel.grid.major = element_blank(), 
+              axis.text.x = element_text(size = 10))
+?geom_text_repel
+?geom_label_repel
+
+test <- league_data %>%
+        select(team, season, season_game_number, date) %>%
+        group_by(team, season) %>%
+        count()
+league_data %>%
+        filter(team == "L.A" & season == "20052006") %>%
+        View()
